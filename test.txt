@@ -1,0 +1,78 @@
+WITH target_group AS (
+
+SELECT DISTINCT e.id_number
+FROM advance.entity e, advance.address a
+WHERE NOT EXISTS (SELECT DISTINCT 1
+                  FROM advance.mailing_list ml
+                  WHERE ml.id_number = e.id_number AND
+                  ml.mail_list_type_code IN ('DNM') AND
+                  ml.mail_list_status_code = 'A')
+AND e.record_status_code = 'A'
+AND e.id_number = a.id_number
+AND a.addr_status_code = 'A'
+AND a.addr_pref_ind = 'Y'
+AND a.state_code IN (SELECT DISTINCT s.state_code FROM advance.tms_states s WHERE s.state_code = 'KY')
+and a.city = 'Frankfort'
+
+) , join_ids AS (
+
+SELECT tg.id_number ,e.record_type_code,e.gender_code,e.spouse_id_number,tgs.id_number sp_id,sps.record_type_code sp_code,sps.gender_code sp_gender                                            
+,CASE 
+  WHEN sps.id_number IS NULL THEN  tg.id_number 
+  WHEN e.record_type_code     IN ('AL','AD','AS') AND sps.record_type_code NOT IN ('AL','AD','AS')THEN tg.id_number||sps.id_number 
+  WHEN e.record_type_code NOT IN ('AL','AD','AS') AND sps.record_type_code IN ('AL','AD','AS') THEN sps.id_number || tg.id_number
+  WHEN e.gender_code = 'F' AND sps.gender_code = 'M' THEN tg.id_number || sps.id_number
+  WHEN e.gender_code = 'M' AND sps.gender_code = 'F' THEN sps.id_number || tg.id_number
+  WHEN e.gender_code = sps.gender_code OR e.gender_code NOT IN ('M ','F') OR sps.gender_code NOT IN ('M ','F')THEN  
+             (SELECT distinct 
+               CASE
+                 WHEN e1.last_name < spe.last_name THEN e1.id_number ||spe.id_number
+                 WHEN e1.last_name = spe.last_name AND e1.first_name < spe.first_name THEN e1.id_number ||spe.id_number
+                 WHEN e1.last_name = spe.last_name AND e1.first_name = spe.first_name AND e1.id_number < spe.id_number THEN e1.id_number || spe.id_number
+                 ELSE spe.id_number ||e1.id_number 
+                END joinid
+                FROM advance.entity e1, target_group tg1, advance.entity spe
+                WHERE e1.id_number =tg1.id_number
+                AND e1.spouse_id_number =spe.id_number
+                AND (e1.gender_code = spe.gender_code 
+                      OR e1.gender_code NOT IN ('M ','F')
+                      OR spe.gender_code NOT IN('M ','F'))
+                AND tg1.id_number = tg.id_number )
+   END  joint_id  
+FROM target_group tg, advance.entity e,target_group tgs,advance.entity sps
+WHERE tg.id_number = e.id_number
+AND e.spouse_id_number = tgs.id_number(+)
+AND tgs.id_number = sps.id_number(+)
+
+)
+
+select e.id_number
+, tg.joint_id
+, e.record_status_code
+, e.pref_mail_name
+, t.telephone_number
+, a.line_1
+, a.line_2
+, a.addr_pref_ind
+, a.addr_status_code
+, m.email_address
+
+FROM advance.entity e, advance.address a, join_ids tg, advance.telephone t, advance.email m
+where e.id_number = a.id_number
+AND tg.id_number = e.id_number
+and e.id_number = m.id_number(+)
+and e.id_number = t.id_number(+)
+and e.id_number in (select distinct d1.id_number
+                           from advance.degrees d1
+                           where d1.school_code like 'BU'
+                           and d1.degree_year = '2002'
+                           )
+                           
+and t.preferred_ind(+) = 'Y'
+and t.telephone_status_code(+) = 'A'
+and a.addr_pref_ind = 'Y'
+and a.addr_status_code = 'A'  
+and a.city like 'Frankfort'
+and a.state_code like 'KY'
+and m.email_status_code(+) = 'A'
+and m.preferred_ind(+) = 'Y'

@@ -1,0 +1,47 @@
+<input type="submit" value="Select Existing" id="submit_dropdown" name="submit_dropdown">
+</form>
+<hr>
+
+<!-- Closes dropdown box form -->
+<!--END SELECT EXISTING DROPDOWN BOX BLOCK-->
+
+<!-- Upload Script Block - ScriptName textbox input to $ScriptName= $_POST["ScriptName"]; then add $ScriptName to script_name table column and set FileName as $filename to be read in -->
+
+<form  enctype="multipart/form-data" id="submit_script" action="" method="post">
+  <p style="font-size:20px">Upload script:</p>
+  
+  Select File: <input type="file" name="uploadFile" id="uploadFile" style="width:90%"/>
+  <br>
+  Save ScriptName as:
+  <input type="text" name="ScriptName" id="ScriptName"/>
+    <br>
+<input type="text" name="product" list="productName"/>
+		<label for="autocomplete">Enter or Select Category: </label>
+<datalist id="productName">
+    <option value="	1">Pen</option>
+    <option value="2">Pencil</option>
+    <option value="3">Paper</option>
+</datalist>
+		
+		<!--<input id="autocomplete">
+ 
+<script>
+$( "#autocomplete" ).autocomplete({
+  source: [ "c++", "java", "php", "coldfusion", "javascript", "asp", "ruby" ]
+});
+</script> -->
+<br>
+  <input name="submit_script" type="submit" value="Upload" id="submit_script">
+</form>
+<!-- END Upload Script Block-->
+
+<br>
+<hr>
+<p style="font-size:20px">
+Print All Scripts<br>
+<!-- Print all scripts - uses function print_All() after submit of submit_all form-->
+<form id="submit_all" action="" method="post">
+  <input name="submit_all" value="Print All Scripts" type="submit">
+</form>
+</p>
+<hr>

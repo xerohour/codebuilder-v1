@@ -1,0 +1,2 @@
+/c/remote = webserver and remote server
+/desktop/local = local files
